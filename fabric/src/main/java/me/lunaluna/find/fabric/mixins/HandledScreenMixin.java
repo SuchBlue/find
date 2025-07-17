@@ -7,8 +7,6 @@ import me.lunaluna.find.fabric.widget.FindWidget;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.ingame.HandledScreen;
-import net.minecraft.client.render.RenderLayer;
-import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.screen.slot.Slot;
 import net.minecraft.text.Text;
 import org.lwjgl.glfw.GLFW;
@@ -33,6 +31,7 @@ public abstract class HandledScreenMixin extends Screen {
     @Inject(at = @At("TAIL"), method = "init")
     private void init(CallbackInfo ci) {
         widget = new FindWidget(x + 1, y + backgroundHeight + 4);
+        addDrawableChild(widget);
         addSelectableChild(widget);
     }
 
@@ -71,16 +70,12 @@ public abstract class HandledScreenMixin extends Screen {
         var color = Config.INSTANCE.color().getRGB();
         var border = HAS_BORDER ? 1 : 0;
 
-        float r = (color >> 16 & 255) / 255.0F;
-        float g = (color >> 8 & 255) / 255.0F;
-        float b = (color & 255) / 255.0F;
-        float a = 0.2F;
+        int r = (color >> 16) & 0xFF;
+        int g = (color >> 8)  & 0xFF;
+        int b = color & 0xFF;
 
-        matrices.getMatrices().push();
-        RenderSystem.setShaderColor(r, g, b, a);
+        int shadedColor = (128 << 24) | (r << 16) | (g << 8) | b;
 
-        matrices.fillGradient(x - border, y - border, x + 16 + border, y + 16 + border, 100, color, color);
-        RenderSystem.setShaderColor(1F, 1F, 1F, 1F);
-        matrices.getMatrices().pop();
+        matrices.fillGradient(x - border, y - border, x + 16 + border, y + 16 + border, shadedColor, shadedColor);
     }
 }
